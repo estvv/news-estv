@@ -7,7 +7,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </header>
         {children}
         <footer className="mt-16 text-neutral-400 text-xs text-center">
-          <p>Data sourced from HuggingFace and arXiv</p>
         </footer>
       </div>
     </div>
