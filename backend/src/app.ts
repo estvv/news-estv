@@ -16,6 +16,14 @@ try {
 app.use(cors());
 app.use(express.json());
 
+// Health check at /health (not under /api)
+app.get('/health', (_req, res) => {
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString()
+  });
+});
+
 const apiRouter = routes();
 app.use('/api', apiRouter);
 
