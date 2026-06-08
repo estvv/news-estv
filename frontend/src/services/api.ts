@@ -1,4 +1,5 @@
 import type { PapersResponse, Summary } from '../types';
+import { getToken } from '../utils/auth';
 
 const API_BASE = '/api';
 
@@ -20,15 +21,25 @@ export async function getConfig(): Promise<{ categories: any[] }> {
 }
 
 export async function getSummaries(papers: Array<{ id: string; title: string; abstract: string; source: 'huggingface' | 'arxiv' }>): Promise<Map<string, Summary>> {
+  const token = getToken();
+  
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+  
   const response = await fetch(`${API_BASE}/papers/summarize`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
     },
     body: JSON.stringify({ papers }),
   });
   
   if (!response.ok) {
+    if (response.status === 401) {
+      throw new Error('Authentication required');
+    }
     throw new Error('Failed to fetch summaries');
   }
   

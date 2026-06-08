@@ -14,6 +14,9 @@ services:
       - PORT=8080
       - NODE_ENV=production
       - MISTRAL_API_KEY=${MISTRAL_API_KEY}
+      - AUTH_PASSWORD=${AUTH_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+      - MISTRAL_API_KEY=${MISTRAL_API_KEY}
     restart: unless-stopped
 
   frontend:

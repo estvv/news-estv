@@ -3,6 +3,7 @@ import { arxivService } from '../services/arxivService.js';
 import { llmService } from '../services/llmService.js';
 import { cacheService } from '../services/cacheService.js';
 import { getConfig } from '../config/index.js';
+import { authMiddleware, type AuthRequest } from '../middleware/auth.js';
 import type { PaperWithSummary, Summary, ArxivCategory } from '../types/index.js';
 
 export function papersRoutes(router: Router): void {
@@ -42,7 +43,7 @@ export function papersRoutes(router: Router): void {
     }
   });
 
-  router.post('/papers/summarize', async (req: Request, res: Response) => {
+  router.post('/papers/summarize', authMiddleware, async (req: AuthRequest, res: Response) => {
     try {
       const { papers } = req.body;
 
@@ -51,23 +52,37 @@ export function papersRoutes(router: Router): void {
       }
 
       const papersToSummarize = papers.filter((p: any) => {
-        // Always fetch fresh summaries - don't use cache
+        const cacheKey = `summary:${p.id}`;
+        const cached = cacheService.get<Summary>(cacheKey);
+        if (cached) return false;
         return p.abstract && p.abstract.trim().length >= 50;
       });
+
+      const cachedSummaries: Summary[] = papers
+        .map((p: any) => {
+          const cacheKey = `summary:${p.id}`;
+          return cacheService.get<Summary>(cacheKey);
+        })
+        .filter((s): s is Summary => s !== undefined);
 
       let newSummaries: Summary[] = [];
       if (papersToSummarize.length > 0) {
         try {
           newSummaries = await llmService.summarizePapers(papersToSummarize);
-          // Don't cache - regenerate on each request
+          
+          newSummaries.forEach((summary) => {
+            const cacheKey = `summary:${summary.paperId}`;
+            cacheService.set(cacheKey, summary, 3600);
+          });
         } catch (error) {
           console.error('Error generating summaries:', error);
         }
       }
 
-      const result: Summary[] = papers
-        .map((p: any) => newSummaries.find((s: Summary) => s.paperId === p.id))
-        .filter((s): s is Summary => s !== null && s !== undefined);
+      const result: Summary[] = [
+        ...cachedSummaries,
+        ...newSummaries
+      ];
 
       res.json({ summaries: result });
     } catch (error) {

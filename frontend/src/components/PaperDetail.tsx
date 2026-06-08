@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import type { PaperWithSummary, ArxivCategory } from '../types';
 import { getArxivPapers, getSummaries } from '../services/api';
 import { getTagColor } from '../utils/tagColors';
+import { isAuthenticated } from '../utils/auth';
 
 export function PaperDetail() {
   const { id } = useParams<{ id: string }>();
@@ -98,6 +99,9 @@ export function PaperDetail() {
       }
     } catch (error) {
       console.error('Failed to load summary:', error);
+      if (error instanceof Error && error.message === 'Authentication required') {
+        navigate('/login');
+      }
     } finally {
       setLoadingSummary(false);
     }
@@ -272,12 +276,24 @@ export function PaperDetail() {
             </div>
           ) : (
             <div className="text-center py-12">
-              <button
-                onClick={() => loadSummary(paper)}
-                className="text-sm text-neutral-600 hover:text-neutral-900 border border-neutral-200 rounded-lg px-6 py-3 hover:bg-neutral-50 transition-colors"
-              >
-                Generate Summary
-              </button>
+              {isAuthenticated() ? (
+                <button
+                  onClick={() => loadSummary(paper)}
+                  className="text-sm text-neutral-600 hover:text-neutral-900 border border-neutral-200 rounded-lg px-6 py-3 hover:bg-neutral-50 transition-colors"
+                >
+                  Generate Summary
+                </button>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-neutral-600 text-sm">Login required to generate AI summaries</p>
+                  <button
+                    onClick={() => navigate('/login')}
+                    className="text-sm text-white bg-neutral-900 hover:bg-neutral-800 rounded-lg px-6 py-3 transition-colors"
+                  >
+                    Login
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </article>

@@ -5,6 +5,7 @@ import { Tabs } from './components/Tabs';
 import { PaperCard } from './components/PaperCard';
 import { LoadingState } from './components/LoadingState';
 import { PaperDetail } from './components/PaperDetail';
+import { LoginPage } from './components/LoginPage';
 import { getArxivPapers, getConfig } from './services/api';
 import type { PaperWithSummary, ArxivCategory } from './types';
 
@@ -126,6 +127,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/login" element={<LoginPage />} />
         <Route path="/" element={<HomePage />} />
         <Route path="/paper/:source/:id" element={<PaperDetail />} />
         <Route path="*" element={<Navigate to="/" replace />} />

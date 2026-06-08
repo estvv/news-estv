@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import { rateLimit } from 'express-rate-limit';
 import routes from './routes/index.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { loadConfig } from './config/index.js';
@@ -13,10 +14,20 @@ try {
   process.exit(1);
 }
 
+app.set('trust proxy', 2);
+
 app.use(cors());
 app.use(express.json());
 
-// Health check at /health (not under /api)
+const apiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10000,
+  message: { success: false, error: 'Too many requests' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+app.use('/api', apiLimiter);
+
 app.get('/health', (_req, res) => {
   res.json({
     status: 'ok',
