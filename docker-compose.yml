@@ -13,15 +13,8 @@ services:
     environment:
       - PORT=8080
       - NODE_ENV=production
+      - MISTRAL_API_KEY=${MISTRAL_API_KEY}
     restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          memory: 512M
-          cpus: '1.0'
-        reservations:
-          memory: 256M
-          cpus: '0.5'
 
   frontend:
     build:
@@ -37,14 +30,6 @@ services:
     depends_on:
       - backend
     restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          memory: 128M
-          cpus: '0.5'
-        reservations:
-          memory: 64M
-          cpus: '0.25'
 
 networks:
   caddy_net:
