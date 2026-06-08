@@ -98,7 +98,7 @@ export class LLMService {
   }
 
   private buildPrompt(title: string, abstract: string): string {
-    return `Summarize this research paper concisely.
+    return `Summarize this research paper concisely in French.
 
 Title: ${title}
 
@@ -106,24 +106,24 @@ Abstract: ${abstract}
 
 Output ONLY valid JSON with this exact structure (no markdown, no code blocks):
 {
-  "resume": "Two concise sentences explaining what this paper does and why it matters.",
+  "resume": "Two concise sentences in French explaining what this paper does and why it matters.",
   "definitions": [
-    "Term1: its definition",
-    "Term2: its definition",
-    "Term3: its definition"
+    "Term1: its definition in French",
+    "Term2: its definition in French",
+    "Term3: its definition in French"
   ],
   "problem": {
     "points": [
-      "What problem does this solve?",
-      "Why does it matter?",
-      "What gap does it fill?"
+      "What problem does this solve? (in French)",
+      "Why does it matter? (in French)",
+      "What gap does it fill? (in French)"
     ]
   },
   "solution": {
     "points": [
-      "What's the key approach?",
-      "What's innovative?",
-      "How is it different?"
+      "What's the key approach? (in French)",
+      "What's innovative? (in French)",
+      "How is it different? (in French)"
     ]
   }
 }
@@ -140,7 +140,7 @@ Examples:
 
 Prefer **bold** for most emphasis. Use it liberally for important nouns, numbers, and key concepts throughout all sections.
 
-Write 2 sentences for resume (maximum 30 words total). Write 3-5 technical term definitions in "definitions" array. Each definition: "Term: brief explanation" format (5-15 words per definition). Include abbreviations, methods, and key concepts. Write 3 bullet points per section. Each bullet: 1 short sentence maximum (10-15 words). Be direct and factual. No fluff. Use formatting for emphasis. Ensure complete JSON.`;
+Write 2 sentences for resume (maximum 30 words total). Write 3-5 technical term definitions in "definitions" array. Each definition: "Term: brief explanation" format (5-15 words per definition). Include abbreviations, methods, and key concepts. Write 3 bullet points per section. Each bullet: 1 short sentence maximum (10-15 words). Be direct and factual. No fluff. Use formatting for emphasis. Ensure complete JSON. ALL TEXT MUST BE IN FRENCH.`;
   }
 
   private async callMistral(prompt: string, apiKey: string): Promise<string> {
@@ -160,7 +160,7 @@ Write 2 sentences for resume (maximum 30 words total). Write 3-5 technical term 
             {
               role: 'system',
               content:
-                'You are a concise research paper summarizer. Write brief, factual bullets. Maximum 1 sentence per bullet, 10-15 words. Be direct. No elaboration. Always return valid JSON.',
+                'You are a concise research paper summarizer writing in French. Write brief, factual bullets. Maximum 1 sentence per bullet, 10-15 words. Be direct. No elaboration. Always return valid JSON in French.',
             },
             {
               role: 'user',
