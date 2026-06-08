@@ -2,13 +2,18 @@ export interface SummarySection {
   points: string[];
 }
 
-export interface Summary {
-  paperId: string;
-  source: 'huggingface' | 'arxiv';
+export interface SummaryContent {
   resume: string;
   definitions: string[];
   problem: SummarySection;
   solution: SummarySection;
+}
+
+export interface Summary {
+  paperId: string;
+  source: 'huggingface' | 'arxiv';
+  en: SummaryContent;
+  fr: SummaryContent;
   generatedAt: string;
   cached: boolean;
 }

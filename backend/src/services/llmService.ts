@@ -67,21 +67,25 @@ export class LLMService {
         const parsed = this.parseResponse(response);
 
         console.log(`[LLM Service] Successfully parsed summary for paper ${paperId}:`, {
-          resume: parsed.resume.substring(0, 30) + '...',
-          definitions: parsed.definitions.length,
-          sections: {
-            problem: parsed.problem.points.length,
-            solution: parsed.solution.points.length
+          en: {
+            resume: parsed.en.resume.substring(0, 30) + '...',
+            definitions: parsed.en.definitions.length,
+            sections: {
+              problem: parsed.en.problem.points.length,
+              solution: parsed.en.solution.points.length
+            }
+          },
+          fr: {
+            resume: parsed.fr.resume.substring(0, 30) + '...',
+            definitions: parsed.fr.definitions.length
           }
         });
 
         return {
           paperId,
           source,
-          resume: parsed.resume,
-          definitions: parsed.definitions || [],
-          problem: parsed.problem,
-          solution: parsed.solution,
+          en: parsed.en,
+          fr: parsed.fr,
           generatedAt: new Date().toISOString(),
           cached: false,
         };
@@ -98,7 +102,7 @@ export class LLMService {
   }
 
   private buildPrompt(title: string, abstract: string): string {
-    return `Summarize this research paper concisely in French.
+    return `Summarize this research paper concisely in BOTH French and English.
 
 Title: ${title}
 
@@ -106,25 +110,25 @@ Abstract: ${abstract}
 
 Output ONLY valid JSON with this exact structure (no markdown, no code blocks):
 {
-  "resume": "Two concise sentences in French explaining what this paper does and why it matters.",
-  "definitions": [
-    "Term1: its definition in French",
-    "Term2: its definition in French",
-    "Term3: its definition in French"
-  ],
-  "problem": {
-    "points": [
-      "What problem does this solve? (in French)",
-      "Why does it matter? (in French)",
-      "What gap does it fill? (in French)"
-    ]
+  "en": {
+    "resume": "Two concise sentences explaining what this paper does and why it matters.",
+    "definitions": ["Term1: its definition", "Term2: its definition", "Term3: its definition"],
+    "problem": {
+      "points": ["What problem does this solve?", "Why does it matter?", "What gap does it fill?"]
+    },
+    "solution": {
+      "points": ["What's the key approach?", "What's innovative?", "How is it different?"]
+    }
   },
-  "solution": {
-    "points": [
-      "What's the key approach? (in French)",
-      "What's innovative? (in French)",
-      "How is it different? (in French)"
-    ]
+  "fr": {
+    "resume": "Two concise sentences in French explaining what this paper does and why it matters.",
+    "definitions": ["Term1: its definition in French", "Term2: its definition in French", "Term3: its definition in French"],
+    "problem": {
+      "points": ["What problem does this solve? (in French)", "Why does it matter? (in French)", "What gap does it fill? (in French)"]
+    },
+    "solution": {
+      "points": ["What's the key approach? (in French)", "What's innovative? (in French)", "How is it different? (in French)"]
+    }
   }
 }
 
@@ -140,7 +144,7 @@ Examples:
 
 Prefer **bold** for most emphasis. Use it liberally for important nouns, numbers, and key concepts throughout all sections.
 
-Write 2 sentences for resume (maximum 30 words total). Write 3-5 technical term definitions in "definitions" array. Each definition: "Term: brief explanation" format (5-15 words per definition). Include abbreviations, methods, and key concepts. Write 3 bullet points per section. Each bullet: 1 short sentence maximum (10-15 words). Be direct and factual. No fluff. Use formatting for emphasis. Ensure complete JSON. ALL TEXT MUST BE IN FRENCH.`;
+Write 2 sentences for resume (maximum 30 words total). Write 3-5 technical term definitions in "definitions" array. Each definition: "Term: brief explanation" format (5-15 words per definition). Include abbreviations, methods, and key concepts. Write 3 bullet points per section. Each bullet: 1 short sentence maximum (10-15 words). Be direct and factual. No fluff. Use formatting for emphasis. Ensure complete JSON.`;
   }
 
   private async callMistral(prompt: string, apiKey: string): Promise<string> {
@@ -160,7 +164,7 @@ Write 2 sentences for resume (maximum 30 words total). Write 3-5 technical term 
             {
               role: 'system',
               content:
-                'You are a concise research paper summarizer writing in French. Write brief, factual bullets. Maximum 1 sentence per bullet, 10-15 words. Be direct. No elaboration. Always return valid JSON in French.',
+                'You are a concise research paper summarizer. Write brief, factual bullets. Maximum 1 sentence per bullet, 10-15 words. Be direct. No elaboration. Always return valid JSON with both English (en) and French (fr) versions.',
             },
             {
               role: 'user',
@@ -192,7 +196,7 @@ Write 2 sentences for resume (maximum 30 words total). Write 3-5 technical term 
     }
   }
 
-  private parseResponse(response: string): { resume: string; definitions: string[]; problem: any; solution: any } {
+  private parseResponse(response: string): { en: any; fr: any } {
     try {
       let cleaned = response.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       
@@ -203,24 +207,37 @@ Write 2 sentences for resume (maximum 30 words total). Write 3-5 technical term 
       
       const parsed = JSON.parse(cleaned);
 
-      if (!parsed.resume || !parsed.definitions || !parsed.problem || !parsed.solution) {
-        throw new Error('Missing required sections in response');
+      if (!parsed.en || !parsed.fr) {
+        throw new Error('Missing required language versions (en/fr) in response');
+      }
+
+      if (!parsed.en.resume || !parsed.en.definitions || !parsed.en.problem || !parsed.en.solution) {
+        throw new Error('Missing required sections in English version');
+      }
+
+      if (!parsed.fr.resume || !parsed.fr.definitions || !parsed.fr.problem || !parsed.fr.solution) {
+        throw new Error('Missing required sections in French version');
       }
 
       const config = getConfig();
       const maxPoints = config?.categories.llm.maxBulletPoints || 15;
 
       const safeSlice = (arr: any[] = []) => arr.slice(0, maxPoints).map((p: string) => p.trim());
-      
-      return {
-        resume: (parsed.resume || '').trim(),
-        definitions: Array.isArray(parsed.definitions) ? parsed.definitions.map((d: string) => d.trim()) : [],
+
+      const parseContent = (content: any) => ({
+        resume: (content.resume || '').trim(),
+        definitions: Array.isArray(content.definitions) ? content.definitions.map((d: string) => d.trim()) : [],
         problem: {
-          points: safeSlice(parsed.problem?.points)
+          points: safeSlice(content.problem?.points)
         },
         solution: {
-          points: safeSlice(parsed.solution?.points)
+          points: safeSlice(content.solution?.points)
         }
+      });
+      
+      return {
+        en: parseContent(parsed.en),
+        fr: parseContent(parsed.fr)
       };
     } catch (error) {
       console.error('Failed to parse LLM response:', error);

@@ -65,11 +65,11 @@ export function PaperCard({ paper, categories = [] }: PaperCardProps) {
       {paper.summary && (
         <div className="mb-3 pt-3 border-t border-neutral-100">
           <p className="text-xs text-neutral-600 line-clamp-2 mb-2">
-            {paper.summary!.resume}
+            {paper.summary!.en.resume}
           </p>
           <div className="flex gap-3 text-xs text-neutral-400">
-            <span>{paper.summary!.problem?.points?.length || 0} problem</span>
-            <span>{paper.summary!.solution?.points?.length || 0} solution</span>
+            <span>{paper.summary!.en.problem?.points?.length || 0} problem</span>
+            <span>{paper.summary!.en.solution?.points?.length || 0} solution</span>
           </div>
         </div>
       )}
