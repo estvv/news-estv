@@ -1,0 +1,37 @@
+{
+  "categories": {
+    "arxiv": [
+      { "id": "cs.AI", "name": "Artificial Intelligence", "color": "green" },
+      { "id": "cs.LG", "name": "Machine Learning", "color": "blue" },
+      { "id": "cs.CL", "name": "Computation and Language", "color": "purple" },
+      { "id": "cs.CV", "name": "Computer Vision", "color": "orange" },
+      { "id": "cs.NE", "name": "Neural and Evolutionary Computing", "color": "cyan" },
+      { "id": "cs.RO", "name": "Robotics", "color": "pink" },
+      { "id": "cs.SE", "name": "Software Engineering", "color": "yellow" },
+      { "id": "cs.CR", "name": "Cryptography and Security", "color": "red" },
+      { "id": "cs.DS", "name": "Data Structures and Algorithms", "color": "indigo" },
+      { "id": "cs.DB", "name": "Databases", "color": "teal" }
+    ],
+    "huggingface": {
+      "models": {
+        "maxResults": 10,
+        "sortBy": "downloads"
+      },
+      "papers": {
+        "maxResults": 10
+      }
+    },
+    "cache": {
+      "ttlSeconds": 300
+    },
+    "llm": {
+      "enabled": true,
+      "maxBulletPoints": 15,
+      "model": "mistral-small-latest",
+      "timeout": 120000,
+      "maxRetries": 3,
+      "batchSize": 5,
+      "batchDelay": 1000
+    }
+  }
+}

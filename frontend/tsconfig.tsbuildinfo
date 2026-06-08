@@ -1,0 +1,1 @@
+{"root":["./src/App.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/components/Layout.tsx","./src/components/LoadingState.tsx","./src/components/PaperCard.tsx","./src/components/PaperDetail.tsx","./src/components/Tabs.tsx","./src/services/api.ts","./src/types/index.ts","./src/utils/tagColors.ts"],"version":"6.0.3"}
